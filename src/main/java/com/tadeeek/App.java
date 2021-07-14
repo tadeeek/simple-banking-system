@@ -1,9 +1,25 @@
 package com.tadeeek;
 
 import java.util.*;
+import org.hibernate.*;
+
+import com.tadeeek.model.Account;
+import com.tadeeek.util.HibernateUtil;
 
 public class App {
     public static void main(String[] args) throws Exception {
+
+        // Connection test
+
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        session.beginTransaction();
+
+        Account account = new Account("1231231231231231", "3213");
+        session.save(account);
+        session.getTransaction().commit();
+
+        // Connection test end
+
         List<Account> accounts = new ArrayList<>();
         Account currentAccount = null;
 
@@ -90,30 +106,6 @@ public class App {
 
         Account newAccount = new Account(cardNumber, cardPIN);
         accounts.add(newAccount);
-    }
-
-    static class Account {
-        private final String cardNumber;
-        private final String cardPIN;
-        private long balance;
-
-        public Account(String cardNumber, String cardPIN) {
-            this.cardNumber = cardNumber;
-            this.cardPIN = cardPIN;
-            this.balance = 0;
-        }
-
-        public long getBalance() {
-            return balance;
-        }
-
-        public String getCardNumber() {
-            return cardNumber;
-        }
-
-        public String getCardPIN() {
-            return cardPIN;
-        }
     }
 
     public static Account logIn(List<Account> accounts, String cardNumber, String cardPIN) {
