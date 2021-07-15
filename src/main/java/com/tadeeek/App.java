@@ -88,14 +88,22 @@ public class App {
     public static void createAccount(List<Account> accounts) {
         Random random = new Random();
         String BIN = "400000";
-        String checksum = "3";
         long leftLimit = 0L;
         long rightLimit = 999900999L;
         long accountIdentifier = leftLimit + (long) (Math.random() * (rightLimit - leftLimit));
 
+        // generate part of cardNumber
+        String cardNumberFront = BIN + String.format("%09d", accountIdentifier);
+
+        // generate checksum
+        int checksum = generateChecksum(cardNumberFront);
+        // generate cardNumber
+
+        String cardNumber = BIN + String.format("%09d", accountIdentifier) + checksum;
+
+        // check if its in database!!!
         System.out.println("Your card has been created");
         System.out.println("Your card number:");
-        String cardNumber = BIN + String.format("%09d", accountIdentifier) + checksum;
 
         System.out.println(cardNumber);
         System.out.println("Your card PIN:");
@@ -108,6 +116,39 @@ public class App {
         accounts.add(newAccount);
     }
 
+    public static int generateChecksum(String cardNumberFront) {
+
+        String cardNumberFrontArr[] = cardNumberFront.split("");
+
+        // generate control number
+        // multiply odd digits by 2 and convert array to array of ints.substract 9 to
+        // numbers over 9
+        // add them together
+        int sum = 0;
+        for (int i = 0; i < cardNumberFrontArr.length; i++) {
+            int currentDigit = Integer.parseInt(cardNumberFrontArr[i]);
+            // because index starts at 0 so multiply even digits, not odd
+            if (i % 2 == 0 && currentDigit != 0) {
+                currentDigit = currentDigit * 2;
+                if (currentDigit >= 10) {
+                    sum = sum + (currentDigit - 9);
+                } else {
+                    sum = sum + currentDigit;
+                }
+            } else {
+                sum = sum + currentDigit;
+            }
+
+        }
+        int checksum = 0;
+
+        while ((sum + checksum) % 10 != 0) {
+            checksum++;
+        }
+
+        return checksum;
+    }
+
     public static Account logIn(List<Account> accounts, String cardNumber, String cardPIN) {
         Iterator<Account> iterator = accounts.iterator();
 
@@ -115,7 +156,7 @@ public class App {
             Account account = iterator.next();
             if (account.getCardNumber().equals(cardNumber)) {
                 if (account.getCardPIN().equals(cardPIN)) {
-                    System.out.println("You have successfully logged in!\n");
+                    System.out.println("You have successfully loggedin!\n");
 
                     return account;
                 }
