@@ -9,18 +9,6 @@ import com.tadeeek.util.HibernateUtil;
 public class App {
     public static void main(String[] args) throws Exception {
 
-        // Connection test
-
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        session.beginTransaction();
-
-        Account account = new Account("1231231231231231", "3213");
-        session.save(account);
-        session.getTransaction().commit();
-
-        // Connection test end
-
-        List<Account> accounts = new ArrayList<>();
         Account currentAccount = null;
 
         program: while (true) {
@@ -35,7 +23,7 @@ public class App {
 
             switch (input) {
                 case "1":
-                    createAccount(accounts);
+                    createAccount();
                     break;
                 case "2":
                     System.out.println("Enter your card number:");
@@ -44,7 +32,7 @@ public class App {
                     String cardPIN = scanner.nextLine();
                     System.out.println("");
 
-                    currentAccount = logIn(accounts, cardNumber, cardPIN);
+                    currentAccount = logIn(cardNumber, cardPIN);
 
                     if (currentAccount instanceof Account) {
                         isLoggedIn = true;
@@ -85,7 +73,7 @@ public class App {
         }
     }
 
-    public static void createAccount(List<Account> accounts) {
+    public static void createAccount() {
         Random random = new Random();
         String BIN = "400000";
         long leftLimit = 0L;
@@ -102,6 +90,7 @@ public class App {
         String cardNumber = BIN + String.format("%09d", accountIdentifier) + checksum;
 
         // check if its in database!!!
+
         System.out.println("Your card has been created");
         System.out.println("Your card number:");
 
@@ -113,7 +102,7 @@ public class App {
         System.out.println("");
 
         Account newAccount = new Account(cardNumber, cardPIN);
-        accounts.add(newAccount);
+        saveAccount(newAccount);
     }
 
     public static int generateChecksum(String cardNumberFront) {
@@ -149,7 +138,8 @@ public class App {
         return checksum;
     }
 
-    public static Account logIn(List<Account> accounts, String cardNumber, String cardPIN) {
+    public static Account logIn(String cardNumber, String cardPIN) {
+        List<Account> accounts = getAccounts();
         Iterator<Account> iterator = accounts.iterator();
 
         loop: while (iterator.hasNext()) {
@@ -165,5 +155,19 @@ public class App {
         }
         System.out.println("Wrong card number or PIN!\n");
         return null;
+    }
+
+    public static List<Account> getAccounts() {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        session.beginTransaction();
+
+        return session.createQuery("FROM Account").getResultList();
+    }
+
+    public static void saveAccount(Account account) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        session.beginTransaction();
+        session.save(account);
+        session.getTransaction().commit();
     }
 }
