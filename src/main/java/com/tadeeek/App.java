@@ -74,7 +74,52 @@ public class App {
     }
 
     public static void createAccount() {
-        Random random = new Random();
+        boolean cardNumberExists = false;
+        String cardNumber = "0";
+
+        do {
+            cardNumber = generateCardNumber();
+
+            // Check if its in db
+            List<Account> accounts = getAccounts();
+            Iterator<Account> iterator = accounts.iterator();
+
+            iteratorLoop: while (iterator.hasNext()) {
+                Account account = iterator.next();
+                if (account.getCardNumber().equals(cardNumber)) {
+
+                    System.out.println("Number exists in db");
+                    cardNumberExists = true;
+                    break;
+                } else {
+                    cardNumberExists = false;
+                }
+
+            }
+
+        } while (cardNumberExists);
+
+        if (cardNumberExists) {
+
+        } else {
+            System.out.println("Your card has been created");
+            System.out.println("Your card number:");
+            System.out.println(cardNumber);
+
+            System.out.println("Your card PIN:");
+            Random random = new Random();
+            int number = random.nextInt(1000);
+            String cardPIN = String.format("%04d", number);
+            System.out.println(cardPIN);
+            System.out.println("");
+
+            Account newAccount = new Account(cardNumber, cardPIN);
+            saveAccount(newAccount);
+        }
+
+    }
+
+    public static String generateCardNumber() {
         String BIN = "400000";
         long leftLimit = 0L;
         long rightLimit = 999900999L;
@@ -85,24 +130,11 @@ public class App {
 
         // generate checksum
         int checksum = generateChecksum(cardNumberFront);
-        // generate cardNumber
 
+        // generate cardNumber
         String cardNumber = BIN + String.format("%09d", accountIdentifier) + checksum;
 
-        // check if its in database!!!
-
-        System.out.println("Your card has been created");
-        System.out.println("Your card number:");
-
-        System.out.println(cardNumber);
-        System.out.println("Your card PIN:");
-        int number = random.nextInt(1000);
-        String cardPIN = String.format("%04d", number);
-        System.out.println(cardPIN);
-        System.out.println("");
-
-        Account newAccount = new Account(cardNumber, cardPIN);
-        saveAccount(newAccount);
+        return cardNumber;
     }
 
     public static int generateChecksum(String cardNumberFront) {
@@ -147,7 +179,6 @@ public class App {
             if (account.getCardNumber().equals(cardNumber)) {
                 if (account.getCardPIN().equals(cardPIN)) {
                     System.out.println("You have successfully loggedin!\n");
-
                     return account;
                 }
             }
@@ -170,4 +201,5 @@ public class App {
         session.save(account);
         session.getTransaction().commit();
     }
+
 }
