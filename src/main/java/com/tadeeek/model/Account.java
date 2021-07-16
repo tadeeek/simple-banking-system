@@ -15,7 +15,7 @@ public class Account {
     private Long id;
     private String cardNumber;
     private String cardPIN;
-    private long balance;
+    private double balance;
 
     public Account() {
     }
@@ -26,8 +26,12 @@ public class Account {
         this.balance = 0;
     }
 
-    public long getBalance() {
+    public double getBalance() {
         return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
     }
 
     public String getCardNumber() {

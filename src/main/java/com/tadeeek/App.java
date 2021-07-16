@@ -40,7 +40,10 @@ public class App {
 
                     while (isLoggedIn) {
                         System.out.println("1. Balance");
-                        System.out.println("2. Log out");
+                        System.out.println("2. Add income");
+                        System.out.println("3. Do transfer");
+                        System.out.println("4. Close account");
+                        System.out.println("5. Log out");
                         System.out.println("0. Exit");
 
                         input = scanner.nextLine();
@@ -52,12 +55,27 @@ public class App {
                                 System.out.println("");
                                 break;
                             case "2":
+                                System.out.println("Enter income:");
+                                try {
+                                    double income = scanner.nextDouble();
+                                    addIncome(currentAccount, income);
+                                    System.out.println("Income was added!");
+                                    System.out.println("");
+                                } catch (NumberFormatException ex) {
+                                    System.out.println("Wrong input, balance should be a number");
+                                } catch (InputMismatchException ex) {
+                                    System.out.println("Wrong input, balance should be a number");
+                                }
+                                break;
+                            case "5":
                                 isLoggedIn = false;
                                 System.out.println("You have successfully logged out!\n");
                                 continue program;
-                            case "3":
+                            case "0":
                                 System.out.println("Bye!");
                                 break program;
+                            default:
+                                System.out.println("Unknown command 2");
                         }
                     }
                     continue program;
@@ -188,11 +206,14 @@ public class App {
         return null;
     }
 
+    // Database connections
+
     public static List<Account> getAccounts() {
         Session session = HibernateUtil.getSessionFactory().openSession();
         session.beginTransaction();
-
-        return session.createQuery("FROM Account").getResultList();
+        List<Account> accounts = session.createQuery("FROM Account").getResultList();
+        session.close();
+        return accounts;
     }
 
     public static void saveAccount(Account account) {
@@ -200,6 +221,19 @@ public class App {
         session.beginTransaction();
         session.save(account);
         session.getTransaction().commit();
+        session.close();
+    }
+
+    public static void addIncome(Account account, double income) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        session.beginTransaction();
+
+        double balance = account.getBalance();
+        account.setBalance(balance + income);
+
+        session.update(account);
+        session.getTransaction().commit();
+        session.close();
     }
 
 }

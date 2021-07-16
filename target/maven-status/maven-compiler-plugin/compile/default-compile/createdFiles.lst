@@ -1,2 +1,3 @@
-com\tadeeek\Account.class
+com\tadeeek\model\Account.class
+com\tadeeek\util\HibernateUtil.class
 com\tadeeek\App.class
