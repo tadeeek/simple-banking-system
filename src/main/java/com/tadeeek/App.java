@@ -67,7 +67,7 @@ public class App {
                                 try {
                                     double income = scanner2.nextDouble();
                                     addIncome(currentAccount, income);
-                                    System.out.println("Income was added!");
+                                    System.out.println("Income was added!\n");
                                     System.out.println("");
                                 } catch (NumberFormatException ex) {
                                     System.out.println("Wrong input, balance should be a number");
@@ -112,7 +112,12 @@ public class App {
                                 }
 
                                 continue loggedUser;
-
+                            case "4":
+                                System.out.println("The account has been closed\n");
+                                deleteAccount(currentAccount);
+                                isLoggedIn = false;
+                                currentAccount = null;
+                                continue program;
                             case "5":
                                 isLoggedIn = false;
                                 System.out.println("You have successfully logged out!\n");
@@ -301,6 +306,17 @@ public class App {
 
         session.getTransaction().commit();
         session.close();
+    }
+
+    public static void deleteAccount(Account currentAccount) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        session.beginTransaction();
+
+        session.delete(currentAccount);
+
+        session.getTransaction().commit();
+        session.close();
+
     }
 
 }
