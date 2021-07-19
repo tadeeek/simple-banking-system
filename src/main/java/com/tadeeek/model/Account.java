@@ -26,6 +26,14 @@ public class Account {
         this.balance = 0;
     }
 
+    public void addIncome(double money) {
+        this.balance = balance + money;
+    }
+
+    public void withdraw(double money) {
+        this.balance = balance - money;
+    }
+
     public double getBalance() {
         return balance;
     }

@@ -1,10 +1,14 @@
 package com.tadeeek;
 
-import java.util.*;
-import org.hibernate.*;
-
+import java.util.InputMismatchException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
 import com.tadeeek.model.Account;
 import com.tadeeek.util.HibernateUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Session;
 
 public class App {
     public static void main(String[] args) throws Exception {
@@ -18,6 +22,7 @@ public class App {
             System.out.println("0. Exit");
 
             Scanner scanner = new Scanner(System.in);
+            Scanner scanner2 = new Scanner(System.in);
             String input = scanner.nextLine();
             System.out.println("");
 
@@ -32,13 +37,16 @@ public class App {
                     String cardPIN = scanner.nextLine();
                     System.out.println("");
 
+                    // Login
                     currentAccount = logIn(cardNumber, cardPIN);
-
                     if (currentAccount instanceof Account) {
+                        System.out.println("You have successfully logged in!\n");
                         isLoggedIn = true;
+                    } else {
+                        System.out.println("Wrong card number or PIN!\n");
                     }
 
-                    while (isLoggedIn) {
+                    loggedUser: while (isLoggedIn) {
                         System.out.println("1. Balance");
                         System.out.println("2. Add income");
                         System.out.println("3. Do transfer");
@@ -57,7 +65,7 @@ public class App {
                             case "2":
                                 System.out.println("Enter income:");
                                 try {
-                                    double income = scanner.nextDouble();
+                                    double income = scanner2.nextDouble();
                                     addIncome(currentAccount, income);
                                     System.out.println("Income was added!");
                                     System.out.println("");
@@ -67,6 +75,44 @@ public class App {
                                     System.out.println("Wrong input, balance should be a number");
                                 }
                                 break;
+                            case "3":
+                                System.out.println("Transfer money. Enter card number:");
+                                String recipentCardNumber = scanner.nextLine();
+
+                                if (StringUtils.isNumeric(recipentCardNumber) && recipentCardNumber.length() == 16) {
+                                    Account recipentAccout = checkIfCardNumberExists(recipentCardNumber);
+
+                                    if (recipentAccout instanceof Account) {
+
+                                        try {
+                                            System.out.println("Enter how much money you want to transfer:");
+                                            double moneyTransfer = scanner2.nextDouble();
+                                            if (moneyTransfer <= currentAccount.getBalance()) {
+                                                transferMoney(recipentAccout, currentAccount, moneyTransfer);
+                                                System.out.println("Money transfered\n");
+                                                continue loggedUser;
+                                            } else {
+                                                System.out.println("Not enough money!\n");
+                                                continue loggedUser;
+                                            }
+
+                                        } catch (NumberFormatException ex) {
+                                            System.out.println("Wrong input, balance should be a number\n");
+                                        } catch (InputMismatchException ex) {
+                                            System.out.println("Wrong input, balance should be a number\n");
+                                        }
+
+                                    } else {
+                                        System.out.println("Such a card does not exist.\n");
+                                    }
+
+                                } else {
+                                    System.out.println(
+                                            "Probably u made a mistake in the card number: Please try again!\n");
+                                }
+
+                                continue loggedUser;
+
                             case "5":
                                 isLoggedIn = false;
                                 System.out.println("You have successfully logged out!\n");
@@ -188,21 +234,29 @@ public class App {
         return checksum;
     }
 
-    public static Account logIn(String cardNumber, String cardPIN) {
+    public static Account checkIfCardNumberExists(String cardNumber) {
         List<Account> accounts = getAccounts();
         Iterator<Account> iterator = accounts.iterator();
-
-        loop: while (iterator.hasNext()) {
-            Account account = iterator.next();
+        Account account;
+        while (iterator.hasNext()) {
+            account = iterator.next();
             if (account.getCardNumber().equals(cardNumber)) {
-                if (account.getCardPIN().equals(cardPIN)) {
-                    System.out.println("You have successfully loggedin!\n");
-                    return account;
-                }
+                return account;
+            }
+        }
+
+        return null;
+    }
+
+    public static Account logIn(String cardNumber, String cardPIN) {
+        Account account = checkIfCardNumberExists(cardNumber);
+        if (account instanceof Account) {
+            if (account.getCardPIN().equals(cardPIN)) {
+                return account;
             }
 
+            return null;
         }
-        System.out.println("Wrong card number or PIN!\n");
         return null;
     }
 
@@ -228,10 +282,23 @@ public class App {
         Session session = HibernateUtil.getSessionFactory().openSession();
         session.beginTransaction();
 
-        double balance = account.getBalance();
-        account.setBalance(balance + income);
+        account.addIncome(income);
 
         session.update(account);
+        session.getTransaction().commit();
+        session.close();
+    }
+
+    public static void transferMoney(Account recipentAccount, Account currentAccount, double money) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        session.beginTransaction();
+
+        recipentAccount.addIncome(money);
+        currentAccount.withdraw(money);
+
+        session.update(recipentAccount);
+        session.update(currentAccount);
+
         session.getTransaction().commit();
         session.close();
     }
