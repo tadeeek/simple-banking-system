@@ -5,18 +5,26 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+
 import com.tadeeek.model.Account;
 import com.tadeeek.util.HibernateUtil;
 import org.apache.commons.lang3.StringUtils;
+
 import org.hibernate.Session;
 
 public class App {
+
     public static void main(String[] args) throws Exception {
+        // Magical - do not touch. Setting hibernate loggin to console to off
+        @SuppressWarnings("unused")
+        org.jboss.logging.Logger logger = org.jboss.logging.Logger.getLogger("org.hibernate");
+        java.util.logging.Logger.getLogger("org.hibernate").setLevel(java.util.logging.Level.OFF);
 
         Account currentAccount = null;
 
         program: while (true) {
             boolean isLoggedIn = false;
+            System.out.println("= Menu");
             System.out.println("1. Create an account");
             System.out.println("2. Log into account");
             System.out.println("0. Exit");
@@ -70,9 +78,9 @@ public class App {
                                     System.out.println("Income was added!\n");
                                     System.out.println("");
                                 } catch (NumberFormatException ex) {
-                                    System.out.println("Wrong input, balance should be a number");
+                                    System.out.println("Wrong input, balance should be a number\n");
                                 } catch (InputMismatchException ex) {
-                                    System.out.println("Wrong input, balance should be a number");
+                                    System.out.println("Wrong input, balance should be a number\n");
                                 }
                                 break;
                             case "3":
@@ -126,7 +134,7 @@ public class App {
                                 System.out.println("Bye!");
                                 break program;
                             default:
-                                System.out.println("Unknown command 2");
+                                System.out.println("Unknown command");
                         }
                     }
                     continue program;
