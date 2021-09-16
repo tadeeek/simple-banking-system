@@ -22,7 +22,7 @@ Start main at src/main/java/com/tadeeek/App.java
 
 ## Technologies
 
-Java
+Java, Hibernate
 
 ## Status
 
